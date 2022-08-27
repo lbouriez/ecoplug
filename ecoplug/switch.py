@@ -66,7 +66,6 @@ class EcoPlugSwitch(SwitchEntity):
         self.update()
 
     def update(self):
-        _LOGGER.info('update')
         self._state = self._plug.is_on()
 
 def setup_platform(hass, config, add_entities, discovery_info=None):
@@ -74,6 +73,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
 
     discovered = {}
     def add(plug):
+        _LOGGER.debug(f"Adding {plug.name}")
         if not plug.name in discovered:
             add_entities([EcoPlugSwitch(plug)], True)
             discovered[plug.name] = plug
@@ -83,6 +83,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
         pass
 
     disco = EcoDiscovery(add, remove)
+    _LOGGER.debug("Starting discovery")
     disco.start()
     
     def stop_disco(event):
