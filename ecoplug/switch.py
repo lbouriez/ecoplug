@@ -1,6 +1,7 @@
 import logging
+import time
 
-from homeassistant.const import (DEVICE_DEFAULT_NAME, ATTR_HIDDEN, EVENT_TIME_CHANGED, EVENT_HOMEASSISTANT_STOP)
+from homeassistant.const import (DEVICE_DEFAULT_NAME, ATTR_HIDDEN, EVENT_HOMEASSISTANT_STOP)
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.helpers.entity import ToggleEntity
 from homeassistant.helpers.event import track_time_change
@@ -12,11 +13,13 @@ REQUIREMENTS = ['pyecoplug==0.0.5']
 _LOGGER = logging.getLogger(__name__)
 SCAN_INTERVAL = 5
 
-
 class EcoPlugSwitch(SwitchEntity):
     def __init__(self, plug):
         self._plug = plug
         self._name = plug.name
+        self._attr_extra_state_attributes = {
+            "domain": DOMAIN
+        }
         self._unique_id = "switch." + self._plug.plug_data[2].decode('utf-8')
         self._state = self._plug.is_on()
 
@@ -48,7 +51,7 @@ class EcoPlugSwitch(SwitchEntity):
     def device_state_attributes(self):
         """Return the device state attributes."""
         attrs = {
-            "brand": "Eco Plug",
+            "brand": "Eco-Plug",
             "friendly_name": self._name,
         }
 
@@ -66,8 +69,6 @@ class EcoPlugSwitch(SwitchEntity):
         _LOGGER.info('update')
         self._state = self._plug.is_on()
 
-    
-
 def setup_platform(hass, config, add_entities, discovery_info=None):
     from pyecoplug import EcoDiscovery
 
@@ -83,9 +84,8 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
 
     disco = EcoDiscovery(add, remove)
     disco.start()
-
+    
     def stop_disco(event):
         disco.stop()
 
     hass.bus.listen_once(EVENT_HOMEASSISTANT_STOP, stop_disco)
-
